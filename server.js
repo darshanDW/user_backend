@@ -5,11 +5,12 @@ require('dotenv').config();
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
-const PORT = process.env.PORT||3000;
+const PORT = process.env.PORT || 3000;
 
 const userRoutes = require('./routes/userRoutes');
+const postRoutes = require('./routes/postRoutes');
 app.use('/User', userRoutes);
-
+app.use('/Post', postRoutes);
 app.listen(PORT, () => {
     console.log(PORT);
 })
