@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const User = require('./user');
-const { stringifyMessage } = require('graphql-ws');
 const commentSchema = new mongoose.Schema({
     text: String,
     date: { type: Date, default: Date.now }
