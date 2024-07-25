@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const User = require('./../models/user');
 var MailChecker = require('mailchecker');
+const { jam, generateToken } = require('./../jwt');
 
 router.post('/registration', async (req, res) => {
     try {
-        //for demo storing plain text password in database but we should store using hash
         const { username, email, password } = req.body;
         if (!username || !email || !password) {
             return res.status(400).json({ error: 'incomplete information' });
@@ -21,8 +21,12 @@ router.post('/registration', async (req, res) => {
             return res.status(400).json({ error: 'user already present try to login' });
         }
         const response = await new User({ username, email, password }).save();
-
-        res.status(200).json({ response });
+        const payload = {
+            id: response.id,
+            username: response.username
+        }
+        const token = generateToken(payload);
+        res.status(200).json({ response, token });
 
     } catch (err) {
         console.log(err);
@@ -33,21 +37,28 @@ router.post('/registration', async (req, res) => {
 
 router.post('/login', async (req, res) => {
     try {
-        let { username, password } = req.body;
-        if (!username || !password) {
-            return res.status(400).json({ error: 'fill username or password' });
+        let { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ error: 'fill email or password' });
 
         }
 
-        const checkuser = await User.findOne({ username: username, password: password });
-        if (!checkuser) {
-            return res.status(400).json({ error: 'user not found try to register' });
+        if (!MailChecker.isValid(email)) {
+            return res.status(400).json({ error: 'invalid email' });
 
         }
+        const checkuser = await User.findOne({ email: email });
+        if (!checkuser || !(await checkuser.comparePassword(password))) {
+            return res.status(401).json({ error: 'Invalid username or password' });
+        }
+        const payload = {
+            id: checkuser.id,
+            username: checkuser.username
+        }
+        const token = generateToken(payload);
 
 
-
-        res.status(200).json({ checkuser });
+        res.status(200).json({ checkuser, token });
     }
     catch (err) {
         res.status(500).json({
@@ -65,7 +76,10 @@ router.post('/forgot_password', async (req, res) => {
             return res.status(400).json({ error: 'incomplete info' });
 
         }
+        if (!MailChecker.isValid(email)) {
+            return res.status(400).json({ error: 'invalid email' });
 
+        }
         const checkuser = await User.findOne({ email: email }
         );
 

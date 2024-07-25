@@ -1,24 +1,24 @@
 const express = require('express');
 const router = express.Router();
+const { jam, generateToken } = require('./../jwt');
 
 const Post = require('./../models/post');
 const User = require('../models/user');
 
-router.post('/create', async (req, res) => {
-
+router.post('/create', jam, async (req, res) => {
     if (!req.body) {
         return res.status(400).json({ message: 'Input not get' });
 
     }
 
     try {
-        const user = await User.findById(req.body.id);
+        const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(400).json({ message: 'user not found' });
 
         }
         const post = new Post({
-            User: req.body.id,
+            User: user.id,
 
             title: req.body.title,
             description: req.body.description,
@@ -34,7 +34,7 @@ router.post('/create', async (req, res) => {
     }
 
 });
-router.get('/read/:id', async (req, res) => {
+router.get('/read/:id', jam, async (req, res) => {
 
 
 
@@ -54,7 +54,7 @@ router.get('/read/:id', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-router.patch('/update/:id', async (req, res) => {
+router.patch('/update/:id', jam, async (req, res) => {
     try {
         const post = await Post.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
         if (!post) {
@@ -69,7 +69,7 @@ router.patch('/update/:id', async (req, res) => {
 });
 
 
-router.delete('/delete/:id', async (req, res) => {
+router.delete('/delete/:id', jam, async (req, res) => {
     try {
         const post = await Post.findByIdAndDelete(req.params.id);
         if (!post) {
@@ -83,7 +83,7 @@ router.delete('/delete/:id', async (req, res) => {
     }
 });
 
-router.post('/like/:id', async (req, res) => {
+router.post('/like/:id', jam, async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
         if (!post) {
@@ -98,7 +98,7 @@ router.post('/like/:id', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-router.post('/comment/:id', async (req, res) => {
+router.post('/comment/:id', jam, async (req, res) => {
 
     try {
         if (!req.body) {

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const User = require('./user');
 const commentSchema = new mongoose.Schema({
     text: String,
     date: { type: Date, default: Date.now }
@@ -12,6 +11,8 @@ const postSchema = new mongoose.Schema({
         required: true
     },
     title: {
+
+        
         type: String,
         required: true
     },
